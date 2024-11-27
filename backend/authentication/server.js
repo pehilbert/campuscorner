@@ -39,19 +39,19 @@ app.post("/api/users", async (req, res) => {
         console.log("Fields:", fields);
         
         if (result.insertId) {
-            console.log("Query successful");
+            console.log("Sucessfully created user");
             return res.status(201).send({id: result.insertId.toString()});
         }
 
-        console.log("Query failed");
+        console.log("User creation failed");
         return res.status(500).send({message: "Failed to create user"});
     } catch (error) {
-        console.error("Error:", error);
-
         if (error.code === 'ER_DUP_ENTRY') {
+            console.log("Requested username or email already exists");
             return res.status(400).send({ message: "Username or email already exists" });
         }
 
+        console.error("Error:", error);
         return res.status(500).send({ message: "Server error" });
     }
 });
@@ -134,6 +134,8 @@ app.put("/api/users/:id", async (req, res) => {
         const sql = `UPDATE users SET ${updates.join(", ")} WHERE id = ? LIMIT 1`;
         values.push(idNum);
 
+        console.log("Executing query...");
+
         const conn = await dbUtil.connectToDatabase();
         const [result, fields] = await conn.execute(sql, values);
         await conn.end();
@@ -142,9 +144,11 @@ app.put("/api/users/:id", async (req, res) => {
         console.log("Fields:", fields);
 
         if (result.affectedRows === 0) {
+            console.log("Requested user not found");
             return res.status(404).send({message: "User not found"});
         }
 
+        console.log("Succesfully updated user");
         return res.status(200).send({message: "User updated successfully"});
     } catch (error) {
         console.error(error);
@@ -169,6 +173,8 @@ app.delete("/api/users/:id", async (req, res) => {
         const sql = `DELETE FROM users WHERE id = ?`;
         const values = [idNum];
 
+        console.log("Executing query...");
+
         const conn = await dbUtil.connectToDatabase();
         const [result, fields] = await conn.execute(sql, values);
         await conn.end();
@@ -177,9 +183,11 @@ app.delete("/api/users/:id", async (req, res) => {
         console.log("Fields:", fields);
 
         if (result.affectedRows === 0) {
+            console.log("Request user not found");
             return res.status(404).send({message: "User not found"});
         }
 
+        console.log("Successfully deleted user");
         return res.status(200).send({message: "User deleted successfully"});
     } catch (error) {
         console.error(error);
