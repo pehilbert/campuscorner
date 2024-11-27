@@ -33,11 +33,11 @@ async function testGetUser(testId, id) {
     }
 }
 
-async function testUpdateUser(testId, id, username, email, password) {
+async function testUpdateUser(testId, id, body) {
     try {
         testLog(testId, "Testing update user...");
-        testLog(testId, `id=${id} username=${username}, email=${email}, password=${password}`);
-        const response = await axios.put(`${AUTH_API_ENDPOINT}/api/users/${id}`, {username, email, password});
+        testLog(testId, `id=${id} body=${JSON.stringify(body)}`);
+        const response = await axios.put(`${AUTH_API_ENDPOINT}/api/users/${id}`, body);
         testLog(testId, `Response: ${response.status} ${JSON.stringify(response.data)}`);
 
         return response.data;
@@ -64,7 +64,7 @@ async function testDeleteUser(testId, id) {
 // Adds the entry, gets it, updates it, and gets it again
 async function testLifeCycle(testId, username, email, password) {
     testLog(testId, "FULL LIFECYCLE TEST");
-    
+
     let id = await testCreateUser(testId, username, email, password);
 
     if (id === -1) {
@@ -80,7 +80,7 @@ async function testLifeCycle(testId, username, email, password) {
     }
 
     let newUsername = username + "12345";
-    let updateResult = await testUpdateUser(testId, id, newUsername, email, password);
+    let updateResult = await testUpdateUser(testId, id, {username: newUsername});
 
     if (!updateResult) {
         testLog(testId, "Test failed to update user.");
