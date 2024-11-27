@@ -1,0 +1,31 @@
+version: '3'
+services:
+  api_gateway:
+    build: ./api_gateway
+    ports:
+      - "5000:5000"
+  authentication:
+    build: ./authentication
+    ports:
+      - "5001:5000"
+    env_file: ./authentication/.env
+    environment:
+      - DB_HOST=authentication_db
+      - PORT=5000
+    depends_on:
+      - authentication_db
+  authentication_db:
+    build: ./authentication/database
+    ports:
+      - "3306"
+    env_file: ./authentication/database/.env
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
