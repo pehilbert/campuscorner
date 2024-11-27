@@ -194,6 +194,45 @@ Endpoint: POST /api/auth
 Description: Given a username and password, checks credentials against
 database, returns OK if correct
 */
+app.post("/api/auth", async (req, res) => {
+    console.log("Received request for authentication");
+
+    try {
+        if (!req.body.username || !req.body.password) {
+            console.log("Some data was missing from request");
+            return res.status(400).send({message: "Missing required data fields"});
+        }
+
+        const sql = `SELECT pass FROM users WHERE username = ?`;
+        const values = [req.body.username];
+
+        console.log("Querying database...");
+
+        const conn = await dbUtil.connectToDatabase();
+        const [rows, fields] = await conn.execute(sql, values);
+        await conn.end();
+
+        if (rows.length === 0) {
+            console.log("Authentication failed");
+            return res.status(401).send({message: "Username or password was incorrect"});
+        }
+
+        const hashedPasswordFromDatabase = rows[0].pass;
+
+        if (await bcrypt.compare(req.body.password, hashedPasswordFromDatabase)) {
+            console.log("Authentication successful");
+            return res.status(200).send({message: "Correct password"});
+        }
+
+        console.log("Authentication failed");
+        return res.status(401).send({message: "Username or password was incorrect"});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({message: "Server error"});
+    }
+});
+
+/* Start the server */
 
 app.listen(port, () => {
     console.log(`Authentication service API running on ${port}`);

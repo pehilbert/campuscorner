@@ -61,6 +61,20 @@ async function testDeleteUser(testId, id) {
     }
 }
 
+async function testAuthentication(testId, username, password) {
+    try {
+        testLog(testId, "Testing authentication...");
+        testLog(testId, `username=${username}, password=${password}`);
+        const response = await axios.post(`${AUTH_API_ENDPOINT}/api/auth`, {username, password});
+        testLog(testId, `Response: ${response.status} ${JSON.stringify(response.data)}`);
+
+        return response.data;
+    } catch (error) {
+        testLog(testId, `Error: ${error.status} ${JSON.stringify(error.response.data)}`);
+        return null;
+    }
+}
+
 // Adds the entry, gets it, updates it, and gets it again
 async function testLifeCycle(testId, username, email, password) {
     testLog(testId, "FULL LIFECYCLE TEST");
@@ -101,12 +115,48 @@ async function testLifeCycle(testId, username, email, password) {
         return false;
     }
 
-    testLog(testId, "Test passed.");
+    testLog(testId, "FULL LIFECYCLE TEST PASSED");
     return true;
+}
+
+async function testAuthenticationLifeCycle(testId, username, email, password) {
+    testLog(testId, "FULL AUTHENTICATION LIFECYCLE TEST");
+
+    let id = await testCreateUser(testId, username, email, password);
+
+    if (id === -1) {
+        testLog(testId, "Test failed to create user.");
+        return false;
+    }
+
+    let correctAuthResult = await testAuthentication(testId, username, password);
+
+    if (!correctAuthResult) {
+        testLog(testId, "Test failed to authenticate correct credentials.");
+        return false;
+    }
+
+    let incorrectAuthResult = await testAuthentication(testId, username, password + "123");
+
+    if (incorrectAuthResult) {
+        testLog(testId, "Test failed to reject incorrect credentials.");
+        return false;
+    }
+
+    let deleteResult = await testDeleteUser(testId, id);
+
+    if (!deleteResult) {
+        testLog(testId, "Test failed to delete user when done.");
+        return false;
+    }
+
+    testLog(testId, "FULL AUTHENTICATION LIFECYCLE TEST PASSED");
 }
 
 async function test() {
     await testLifeCycle(1, "test", "test@example.com", "mysecretpassword");
+    console.log();
+    await testAuthenticationLifeCycle(2, "authtest", "authtest@example.com", "supersecretauthpassword");
 }
 
 test();
