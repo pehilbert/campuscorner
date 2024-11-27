@@ -20,7 +20,7 @@ services:
       - "3306"
     env_file: ./authentication/database/.env
     volumes:
-      - mysql_data:/var/lib/mysql
+      - authentication_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -28,4 +28,4 @@ services:
       retries: 5
 
 volumes:
-  mysql_data:
+  authentication_data:
