@@ -1,5 +1,16 @@
 version: '3'
 services:
+  rabbitmq:
+    image: rabbitmq:3-management # Includes the RabbitMQ Management Plugin
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"  # Port for RabbitMQ client connections
+      - "15672:15672"  # Port for RabbitMQ Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest # Default username
+      RABBITMQ_DEFAULT_PASS: guest # Default password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq  # Persistent data storage
   api_gateway:
     build: ./api_gateway
     ports:
@@ -28,4 +39,5 @@ services:
       retries: 5
 
 volumes:
+  rabbitmq_data:
   authentication_data:
