@@ -1,5 +1,6 @@
 const axios = require("axios");
 const AUTH_API_ENDPOINT = "http://localhost:5001";
+const API_GATEWAY_ENDPOINT = "http://localhost:5000";
 
 function testLog(testId, message) {
     console.log(`Test #${testId} | ${message}`);
@@ -29,6 +30,7 @@ async function testGetUser(testId, id) {
         return response.data;
     } catch (error) {
         testLog(testId, `Error: ${error.status} ${JSON.stringify(error.response.data)}`);
+        testDeleteUser(testId, id);
         return null;
     }
 }
@@ -43,6 +45,7 @@ async function testUpdateUser(testId, id, body) {
         return response.data;
     } catch (error) {
         testLog(testId, `Error: ${error.status} ${JSON.stringify(error.response.data)}`);
+        testDeleteUser(testId, id);
         return null;
     }
 }
@@ -65,7 +68,7 @@ async function testAuthentication(testId, username, password) {
     try {
         testLog(testId, "Testing authentication...");
         testLog(testId, `username=${username}, password=${password}`);
-        const response = await axios.post(`${AUTH_API_ENDPOINT}/api/auth`, {username, password});
+        const response = await axios.post(`${API_GATEWAY_ENDPOINT}/api/auth`, {username, password});
         testLog(testId, `Response: ${response.status} ${JSON.stringify(response.data)}`);
 
         return response.data;

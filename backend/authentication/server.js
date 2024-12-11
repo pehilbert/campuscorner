@@ -200,7 +200,7 @@ app.delete("/api/users/:id", async (req, res) => {
 /*
 Endpoint: POST /api/auth
 Description: Given a username and password, checks credentials against
-database, returns OK if correct
+database, returns OK and user ID if correct
 */
 app.post("/api/auth", async (req, res) => {
     console.log("Received request for authentication");
@@ -211,7 +211,7 @@ app.post("/api/auth", async (req, res) => {
             return res.status(400).send({message: "Missing required data fields"});
         }
 
-        const sql = `SELECT pass FROM users WHERE username = ?`;
+        const sql = `SELECT id, pass FROM users WHERE username = ?`;
         const values = [req.body.username];
 
         console.log("Querying database...");
@@ -229,7 +229,7 @@ app.post("/api/auth", async (req, res) => {
 
         if (await bcrypt.compare(req.body.password, hashedPasswordFromDatabase)) {
             console.log("Authentication successful");
-            return res.status(200).send({message: "Correct password"});
+            return res.status(200).send({message: "Correct password", id: rows[0].id});
         }
 
         console.log("Authentication failed");
