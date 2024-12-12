@@ -17,7 +17,8 @@ services:
       - "5000:5000"
     env_file: ./api_gateway/.env
     environment:
-      - AUTH_SERVICE_HOST=http://authentication:5000
+      - AUTH_SERVICE_URL=http://authentication:5000
+      - RABBITMQ_URL=amqp://rabbitmq
   authentication:
     build: ./authentication
     ports:
@@ -26,6 +27,7 @@ services:
     environment:
       - DB_HOST=authentication_db
       - PORT=5000
+      - RABBITMQ_URL=amqp://rabbitmq
     depends_on:
       - authentication_db
   authentication_db:

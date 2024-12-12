@@ -40,7 +40,7 @@ app.post("/api/users", async (req, res) => {
         
         if (result.insertId) {
             console.log("Sucessfully created user");
-            return res.status(201).send({id: result.insertId.toString()});
+            return res.status(201).send({id: result.insertId});
         }
 
         console.log("User creation failed");
