@@ -2,12 +2,17 @@ const bcrypt = require('bcryptjs');
 const express = require("express");
 const cors = require("cors");
 const dbUtil = require("./util/database_util");
+const {startSubscriber} = require("./subscriber");
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors());
+
+/************************/
+/* SYNCHRONOUS REST API */
+/************************/
 
 /* User data endpoints */
 
@@ -240,8 +245,11 @@ app.post("/api/auth", async (req, res) => {
     }
 });
 
-/* Start the server */
+/* Start the synchrnous REST API server */
 
 app.listen(port, () => {
     console.log(`Authentication service API running on ${port}`);
 });
+
+/* Start asynchronous subscriber component (RabbitMQ) */
+startSubscriber();

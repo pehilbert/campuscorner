@@ -2,7 +2,7 @@ const amqp = require('amqplib');
 
 module.exports = {
     publishEvent: async (exchange, event, data) => {
-        const connection = await amqp.connect(`amqp://${process.env.RABBITMQ_URL}`);
+        const connection = await amqp.connect(process.env.RABBITMQ_URL);
         const channel = await connection.createChannel();
 
         await channel.assertExchange(exchange, 'fanout', { durable: true });

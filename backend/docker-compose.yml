@@ -11,6 +11,12 @@ services:
       RABBITMQ_DEFAULT_PASS: guest # Default password
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq  # Persistent data storage
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   api_gateway:
     build: ./api_gateway
     ports:
@@ -18,7 +24,11 @@ services:
     env_file: ./api_gateway/.env
     environment:
       - AUTH_SERVICE_URL=http://authentication:5000
-      - RABBITMQ_URL=amqp://rabbitmq
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
   authentication:
     build: ./authentication
     ports:
@@ -27,9 +37,13 @@ services:
     environment:
       - DB_HOST=authentication_db
       - PORT=5000
-      - RABBITMQ_URL=amqp://rabbitmq
+      - RABBITMQ_URL=amqp://rabbitmq:5672
     depends_on:
-      - authentication_db
+      authentication_db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
   authentication_db:
     build: ./authentication/database
     ports:

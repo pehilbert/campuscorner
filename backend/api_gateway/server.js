@@ -13,6 +13,23 @@ app.use(express.json());
 /* Users endpoints */
 
 /*
+Endpoint: GET /api/users/test_rabbitmq
+Description: Sends test event to rabbitmq
+*/
+app.get("/api/users/test_rabbitmq", async (req, res) => {
+    console.log("Request to test users RabbitMQ received");
+    
+    try {
+        await publishEvent('user_events', 'test', {message: "Hello world!"});
+        console.log("Published event to RabbitMQ");
+        return res.status(200).send({message: "Test successful"});
+    } catch (error) {
+        console.error("Something went wrong publishing to RabbitMQ:", error);
+        return res.status(500).send({message: "Something went wrong"});
+    }
+});
+
+/*
 Endpoint: GET /api/users/:id
 Description: Returns username and email of the user
 */
@@ -20,7 +37,7 @@ app.get("/api/users/:id", async (req, res) => {
     console.log("Request to fetch user info received");
 
     try {
-        const response = await axios.get(`http://${process.env.AUTH_SERVICE_URL}/api/users`);
+        const response = await axios.get(`${process.env.AUTH_SERVICE_URL}/api/users`);
 
         console.log("Data fetched:");
         console.log(JSON.stringify(response.data));
@@ -53,7 +70,7 @@ app.post("/api/users", async (req, res) => {
 
     try {
         const data = {username: req.body.username, password: req.body.password, email: req.body.email};
-        const response = await axios.post(`http://${process.env.AUTH_SERVICE_URL}/api/users`, data);
+        const response = await axios.post(`${process.env.AUTH_SERVICE_URL}/api/users`, data);
         const id = response.data.id;
 
         await publishEvent('user_events', 'created', {id, data: req.body});
@@ -118,7 +135,7 @@ app.post("/api/auth", async (req, res) => {
     const data = {username: req.body.username, password: req.body.password};
 
     try {
-        const result = await axios.post(`http://${process.env.AUTH_SERVICE_URL}/api/auth`, data);
+        const result = await axios.post(`${process.env.AUTH_SERVICE_URL}/api/auth`, data);
 
         console.log("Response OK. Response data from server:");
         console.log(result.data);
