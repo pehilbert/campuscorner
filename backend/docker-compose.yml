@@ -57,6 +57,35 @@ services:
       timeout: 5s
       retries: 5
 
+  email_service:
+    build: ./email_service
+    ports:
+      - "5002:5000"
+    env_file: ./authentication/.env
+    environment:
+      - DB_HOST=email_db
+      - PORT=5000
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    depends_on:
+      email_db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  email_db:
+    build: ./email_service/database
+    ports:
+      - "3306"
+    env_file: ./email_service/database/.env
+    volumes:
+      - email_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   rabbitmq_data:
   authentication_data:
+  email_data:
