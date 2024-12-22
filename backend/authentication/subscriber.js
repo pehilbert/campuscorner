@@ -20,6 +20,11 @@ module.exports = {
                 
                 const messageContent = JSON.parse(msg.content.toString());
                 console.log(`\tContent: ${JSON.stringify(messageContent)}`);
+
+                if (messageContent.origin === 'authentication') {
+                    console.log("Skipping message from our own origin");
+                    return;
+                }
                 
                 switch (msg.fields.routingKey.split('.')[1]) {
                     /* Updated event */
@@ -31,12 +36,12 @@ module.exports = {
                     if (messageContent.id && messageContent.data) {
                         if (messageContent.data.username) {
                             updates.push("username = ?");
-                            values.push(messageContent.username);
+                            values.push(messageContent.data.username);
                         }
 
                         if (messageContent.data.email) {
                             updates.push("email = ?");
-                            values.push(messageContent.email);
+                            values.push(messageContent.data.email);
                         }
 
                         console.log("Updating user, updates =", updates, "values =", values);

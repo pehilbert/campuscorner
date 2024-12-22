@@ -6,6 +6,7 @@ const {publishEvent} = require("./rabbitmq_util");
 
 const app = express();
 const port = process.env.PORT || 5000;
+const THIS_SERVICE = 'api_gateway';
 
 app.use(cors());
 app.use(express.json());
@@ -20,7 +21,7 @@ app.get("/api/users/test_rabbitmq", async (req, res) => {
     console.log("Request to test users RabbitMQ received");
     
     try {
-        await publishEvent('user_events', 'test', {message: "Hello world!"});
+        await publishEvent('user_events', 'test', {origin: THIS_SERVICE, message: "Hello world!"});
         console.log("Published event to RabbitMQ");
         return res.status(200).send({message: "Test successful"});
     } catch (error) {
@@ -74,7 +75,7 @@ app.post("/api/users", async (req, res) => {
         const id = response.data.id;
 
         await publishEvent('user_events', 'created', {id, data: req.body});
-        return res.status(201).send({message: "User successfully created"});
+        return res.status(201).send({message: "User successfully created", id});
     } catch (error) {
         console.error("Error creating user:", error);
 
@@ -95,7 +96,7 @@ app.put("/api/users/:id", async (req, res) => {
 
     try {
         const id = parseInt(req.params.id);
-        await publishEvent('user_events', 'updated', {id, data: req.body});
+        await publishEvent('user_events', 'updated', {origin: THIS_SERVICE, id, data: req.body});
         return res.status(200).send({message: "User successfully updated"});
     } catch (error) {
         console.error("Error publishing update event:", error);
@@ -108,7 +109,7 @@ app.delete("/api/users/:id", async (req, res) => {
 
     try {
         const id = parseInt(req.params.id);
-        await publishEvent('user_events', 'deleted', {id});
+        await publishEvent('user_events', 'deleted', {origin: THIS_SERVICE, id});
         return res.status(200).send({message: "User successfully deleted"});
     } catch (error) {
         console.error("Error publishing delete event:", error);

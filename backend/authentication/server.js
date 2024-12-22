@@ -3,9 +3,11 @@ const express = require("express");
 const cors = require("cors");
 const dbUtil = require("./util/database_util");
 const {startSubscriber} = require("./subscriber");
+const {publishEvent} = require("./rabbitmq_util");
 
 const app = express();
 const port = process.env.PORT || 5000;
+const THIS_SERVICE = 'authentication';
 
 app.use(express.json());
 app.use(cors());
@@ -45,6 +47,7 @@ app.post("/api/users", async (req, res) => {
         
         if (result.insertId) {
             console.log("Sucessfully created user");
+            await publishEvent('user_events', 'created', {origin: THIS_SERVICE, id: result.insertId, data: {username: req.body.username, email: req.body.email}});
             return res.status(201).send({id: result.insertId});
         }
 
@@ -154,6 +157,7 @@ app.put("/api/users/:id", async (req, res) => {
         }
 
         console.log("Succesfully updated user");
+        await publishEvent('user_events', 'updated', {origin: THIS_SERVICE, id: idNum, data: {username: req.body.username, email: req.body.email}});
         return res.status(200).send({message: "User updated successfully"});
     } catch (error) {
         console.error(error);
@@ -193,6 +197,7 @@ app.delete("/api/users/:id", async (req, res) => {
         }
 
         console.log("Successfully deleted user");
+        await publishEvent('user_events', 'deleted', {origin: THIS_SERVICE, id: idNum});
         return res.status(200).send({message: "User deleted successfully"});
     } catch (error) {
         console.error(error);
