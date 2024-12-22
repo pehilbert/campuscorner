@@ -108,7 +108,7 @@ app.delete("/api/users/:id", async (req, res) => {
 
     try {
         const id = parseInt(req.params.id);
-        await publishEvent('user_events', 'deleted', {id, data: req.body});
+        await publishEvent('user_events', 'deleted', {id});
         return res.status(200).send({message: "User successfully deleted"});
     } catch (error) {
         console.error("Error publishing delete event:", error);
