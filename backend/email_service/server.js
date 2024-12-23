@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const {startSubscriber} = require("./subscriber");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -14,3 +15,6 @@ app.get("/test", async (req, res) => {
 app.listen(port, () => {
     console.log(`Email service API running on ${port}`);
 });
+
+/* Start asynchronous subscriber component (RabbitMQ) */
+startSubscriber();
