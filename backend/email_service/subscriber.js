@@ -1,5 +1,6 @@
 const amqp = require("amqplib");
 const dbUtil = require("./util/database_util");
+const {getCode} = require("./util/code_util");
 
 module.exports = {
     startSubscriber: async () => {
@@ -34,8 +35,8 @@ module.exports = {
                         console.log("Creating a new user, ID =", messageContent.id, "email =", messageContent.data.email);
 
                         try {
-                            const sql = `INSERT INTO users (id, email) VALUES (?, ?)`;
-                            const values = [parseInt(messageContent.id), messageContent.data.email];
+                            const sql = `INSERT INTO users (id, email, code) VALUES (?, ?, ?)`;
+                            const values = [parseInt(messageContent.id), messageContent.data.email, getCode()];
                     
                             console.log("Executing query...");
                     

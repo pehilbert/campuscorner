@@ -5,7 +5,7 @@ USE email_db;
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
+    code VARCHAR(5) NOT NULL,
     verified BOOLEAN DEFAULT FALSE,
-    code INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
