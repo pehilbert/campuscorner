@@ -49,8 +49,8 @@ services:
     ports:
       - "3306"
     env_file: ./authentication/database/.env
-    volumes:
-      - authentication_data:/var/lib/mysql
+    # volumes:
+      # - authentication_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -77,8 +77,8 @@ services:
     ports:
       - "3306"
     env_file: ./email_service/database/.env
-    volumes:
-      - email_data:/var/lib/mysql
+    # volumes:
+      # - email_data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -87,5 +87,5 @@ services:
 
 volumes:
   rabbitmq_data:
-  authentication_data:
-  email_data:
+  # authentication_data:
+  # email_data:

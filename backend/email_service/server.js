@@ -1,7 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const {startSubscriber} = require("./subscriber");
+const {sendEmail} = require("./util/email_util");
 const dbUtil = require("./util/database_util");
+
+const VERIFICATION_EMAIL_SUBJECT = "CampusCorner - Verify Your Email";
+const VERIFICATION_EMAIL_CONTENT = `
+<p>Hello,</p>
+<br/>
+<p>Your CampusCorner verification code is <b>CODE</b></p>
+`;
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -13,11 +21,15 @@ app.use(cors());
 /* SYNCHRONOUS REST API */
 /************************/
 
+app.get("/test", async (req, res) => {
+    res.status(200).send("Hello from email service!");
+});
+
 /*
-Endpoint: GET /email-service/<user_id>
+Endpoint: GET /api/status/<user_id>
 Description: Retrieves a user's email verification status
 */
-app.get("/email-service/:id", async (req, res) => {
+app.get("/api/status/:id", async (req, res) => {
     console.log("Request to get status for user ID =", req.params.id);
 
     try {
@@ -45,19 +57,49 @@ app.get("/email-service/:id", async (req, res) => {
 });
 
 /*
-Endpoint: GET /email-service/code/user_id
+Endpoint: GET /api/code/<user_id>
 Description: Sends an email to the user's email with their verification code
 */
-app.get("/email-service/code/:id", async (req, res) => {
-    // TODO
+app.get("/api/code/:id", async (req, res) => {
+    console.log("Request to send code to user's email, id =", req.params.id);
+
+    try {
+        console.log("Querying database...");
+
+        const sql = "SELECT email, code FROM users WHERE id = ?";
+        const values = [parseInt(req.params.id)];
+
+        const conn = await dbUtil.connectToDatabase();
+        const [rows, fields] = await conn.execute(sql, values);
+
+        console.log("Rows:", rows);
+        console.log("Fields:", fields);
+
+        if (rows.length === 0) {
+            console.log("User not found");
+            return res.status(404).send({message: "Not found"});
+        }
+
+        console.log("Sending email...");
+
+        const finalEmailContent = VERIFICATION_EMAIL_CONTENT.replace("CODE", rows[0].code).trim();
+        await sendEmail(rows[0].email, VERIFICATION_EMAIL_SUBJECT, null, finalEmailContent);
+
+        console.log("Email successfully sent");
+
+        return res.status(200).send({message: "Email sent to email address associated with account"});
+    } catch (error) {
+        console.error(error);
+        return res.status(500).send({message: "Server error"});
+    }
 });
 
 /*
-Endpoint: POST /email-service/:id
+Endpoint: POST /api/verify/:id
 Description: Tries to verify a user's email using a verification code provided in the
 body
 */
-app.post("/email-service/:id", async (req, res) => {
+app.post("/api/verify/:id", async (req, res) => {
     console.log("Request to verify user's email, id =", req.params.id);
 
     if (!req.body.code) {
