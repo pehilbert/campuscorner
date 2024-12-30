@@ -3,6 +3,7 @@ const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const {publishEvent} = require("./rabbitmq_util");
+const {verifyToken} = require("./jwt_util");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -153,6 +154,91 @@ app.post("/api/auth", async (req, res) => {
         }
         
         return res.status(500).send({message: "Server Error"});
+    }
+});
+
+/* Email Endpoints */
+
+/*
+GET /api/email/status/:id
+Description: Gets the user's email verification status
+*/
+app.get("/api/email/status/:id", async (req, res) => {
+    console.log("Request to fetch email status received");
+
+    try {
+        const response = await axios.get(`${process.env.EMAIL_SERVICE_URL}/api/status/${req.params.id}`);
+
+        console.log("Data fetched:");
+        console.log(JSON.stringify(response.data));
+
+        return res.status(response.status).send(response.data);
+    } catch (error) {
+        console.error("Error fetching verification status:", error);
+
+        if (error.response) {
+            return res.status(error.response.status).send(error.response.data);
+        }
+
+        return res.status(500).send({message: "Server error"});
+    }
+});
+
+/*
+GET /api/email/code
+Description: Sends an email to the user's email with their
+verification code. Requires authentication. Requesting user will be identified with token
+*/
+app.get("/api/email/code", verifyToken, async (req, res) => {
+    console.log("Request to get email code received and authenticated");
+
+    try {
+        const response = await axios.get(`${process.env.EMAIL_SERVICE_URL}/api/code/${req.user.id}`);
+
+        console.log("Data fetched:");
+        console.log(JSON.stringify(response.data));
+
+        return res.status(response.status).send(response.data);
+    } catch (error) {
+        console.error("Error fetching verification status:", error);
+
+        if (error.response) {
+            return res.status(error.response.status).send(error.response.data);
+        }
+
+        return res.status(500).send({message: "Server error"});
+    }
+});
+
+/*
+POST /api/email/verify
+Description: Attempts to verify user's email with a code in the
+body. Requires authentication. Requesting user will be identified with token
+*/
+app.post("/api/email/verify", verifyToken, async (req, res) => {
+    console.log("Request to verify email received and authenticated");
+
+    if (!req.body.code) {
+        return res.status(400).send({message: "No code provided to verify"});
+    }
+
+    try {
+        const response = await axios.post(`${process.env.EMAIL_SERVICE_URL}/api/verify/${req.user.id}`,
+            {code: req.body.code}
+        );
+
+        console.log("Data fetched:");
+        console.log(JSON.stringify(response.data));
+
+        return res.status(response.status).send(response.data);
+    } catch (error) {
+        console.error("Error fetching verification status:", error);
+
+        if (error.response) {
+            return res.status(error.response.status).send(error.response.data);
+        }
+
+        return res.status(500).send({message: "Server error"});
     }
 });
 

@@ -24,6 +24,7 @@ services:
     env_file: ./api_gateway/.env
     environment:
       - AUTH_SERVICE_URL=http://authentication:5000
+      - EMAIL_SERVICE_URL=http://email_service:5000
       - RABBITMQ_URL=amqp://rabbitmq:5672
     depends_on:
       rabbitmq:
