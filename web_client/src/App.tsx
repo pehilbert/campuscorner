@@ -1,12 +1,27 @@
-import './App.css'
+import React from "react";
+import { Routes, Route, Link } from "react-router-dom";
+import Home from "./pages/Home";
+import "./App.css";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
+import VerifyEmail from "./pages/VerifyEmail";
 
-function App() {
-
+const App: React.FC = () => {
   return (
-    <>
-      <h1>CampusCorner</h1>
-    </>
-  )
-}
+    <div>
+      <nav>
+        <Link className="nav-link" to="/">Home</Link>
+        <Link className="nav-link" to="/signup">Sign Up</Link>
+      </nav>
 
-export default App
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/verify" element={<VerifyEmail />} />
+      </Routes>
+    </div>
+  );
+};
+
+export default App;
